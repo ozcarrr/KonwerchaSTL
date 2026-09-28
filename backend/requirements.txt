@@ -1,0 +1,9 @@
+fastapi
+uvicorn
+pillow
+numpy-stl
+trimesh
+shapely
+python-multipart
+svg.path
+mapbox-earcut

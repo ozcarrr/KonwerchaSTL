@@ -1,0 +1,7 @@
+{
+  "name": "konchewaSTL",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular-standalone"
+}
