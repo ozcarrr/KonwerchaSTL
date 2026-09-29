@@ -1,0 +1,102 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text="Atrás"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="toolbar-title-container">
+        <ion-icon name="time-outline" class="title-icon"></ion-icon>
+        <span>Historial de Conversiones</span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="loadHistory()" [disabled]="isRefreshing()" aria-label="Refrescar">
+        @if (isRefreshing()) {
+          <ion-spinner name="crescent" slot="icon-only"></ion-spinner>
+        } @else {
+          <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+        }
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="history-content">
+  <ion-refresher slot="fixed" (ionRefresh)="handleRefresh($any($event))">
+    <ion-refresher-content pullingText="Desliza para actualizar" refreshingSpinner="crescent">
+    </ion-refresher-content>
+  </ion-refresher>
+
+  <div class="page-wrapper">
+    <!-- Indicador Visual Explícito de Regla de Rotación de 5 Registros -->
+    <ion-card class="rule-card">
+      <ion-card-content>
+        <div class="rule-container">
+          <ion-icon name="shield-checkmark-outline" class="rule-icon"></ion-icon>
+          <div class="rule-text">
+            <strong>Mostrando los últimos 5 registros (rotación automática)</strong>
+            <p>
+              Garantizado por el trigger de base de datos en PostgreSQL (<code>fn_limit_history_fifo</code> en Supabase). Al insertarse un 6to registro, el más antiguo es purgado automáticamente.
+            </p>
+          </div>
+          <ion-badge color="tertiary" class="rule-badge">FIFO Máx. 5</ion-badge>
+        </div>
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Lista Estilizada de Conversiones -->
+    <ion-card class="list-card">
+      <ion-card-header>
+        <ion-card-title>Modelos Recientes</ion-card-title>
+        <ion-card-subtitle>
+          Registros sincronizados en tiempo real con Supabase
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content class="list-content">
+        <ion-list lines="inset">
+          @for (item of history(); track item.id) {
+            <ion-item class="history-item">
+              <ion-icon
+                slot="start"
+                [name]="item.conversion_type === 'svg' ? 'cube-outline' : 'document-outline'"
+                class="item-icon"
+                [color]="item.conversion_type === 'svg' ? 'tertiary' : 'primary'"
+              ></ion-icon>
+
+              <ion-label>
+                <div class="item-title-row">
+                  <h3 class="file-name">{{ item.file_name }}</h3>
+                  <ion-badge [color]="item.conversion_type === 'svg' ? 'tertiary' : 'primary'">
+                    {{ item.conversion_type === 'svg' ? 'Vector SVG' : 'Relieve 3D' }}
+                  </ion-badge>
+                </div>
+
+                <p class="settings-text">
+                  <strong>Ajustes:</strong> {{ formatSettings(item) }}
+                </p>
+
+                <div class="item-meta-row">
+                  <ion-chip outline color="medium" class="meta-chip">
+                    <ion-label>Tamaño: {{ formatBytes(item.stl_size_bytes) }}</ion-label>
+                  </ion-chip>
+                  <span class="date-text">{{ item.created_at | date:'dd/MM/yyyy, HH:mm' }}</span>
+                </div>
+              </ion-label>
+            </ion-item>
+          } @empty {
+            <div class="empty-history">
+              <ion-icon name="time-outline" class="empty-icon"></ion-icon>
+              <h4>No hay registros históricos aún</h4>
+              <p>Genera un modelo 3D en el visor para registrarlo automáticamente en Supabase.</p>
+              <ion-button fill="outline" color="primary" (click)="navigateToHome()">
+                <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+                Ir a Crear Modelo
+              </ion-button>
+            </div>
+          }
+        </ion-list>
+      </ion-card-content>
+    </ion-card>
+  </div>
+</ion-content>

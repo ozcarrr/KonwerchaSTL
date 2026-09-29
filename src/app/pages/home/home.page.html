@@ -1,0 +1,216 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-title>
+      <div class="toolbar-title-container">
+        <ion-icon name="cube-outline" class="title-icon"></ion-icon>
+        <span>Konchewa STL</span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="goToHistory()" aria-label="Ver Historial">
+        <ion-icon slot="start" name="time-outline"></ion-icon>
+        Historial
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="home-content">
+  <div class="page-wrapper">
+    <!-- Indicador de Flujo Simple (3 Pasos de la Rúbrica) -->
+    <div class="stepper-bar">
+      <div class="step-item active">
+        <span class="step-num">1</span>
+        <span class="step-label">Subir & Recortar</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item">
+        <span class="step-num">2</span>
+        <span class="step-label">Ajustar en 3D</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item">
+        <span class="step-num">3</span>
+        <span class="step-label">Descargar STL</span>
+      </div>
+    </div>
+
+    <!-- Tarjeta Principal de Carga de Archivos -->
+    <ion-card
+      class="upload-card"
+      [class.drag-over]="isDragOver()"
+      (dragover)="onDragOver($event)"
+      (dragleave)="onDragLeave($event)"
+      (drop)="onDrop($event)"
+    >
+      <ion-card-header>
+        <ion-card-title>Conversor de Imagen a Modelo 3D</ion-card-title>
+        <ion-card-subtitle>
+          Soporta imágenes raster (PNG, JPG, WebP) para mapas de altura y vectores (SVG) para extrusión
+        </ion-card-subtitle>
+      </ion-card-header>
+
+      <ion-card-content>
+        <!-- Zona Dropzone interactiva -->
+        <div class="dropzone-box" (click)="fileInput.click()">
+          <input
+            #fileInput
+            type="file"
+            accept=".png,.jpg,.jpeg,.webp,.svg,image/png,image/jpeg,image/webp,image/svg+xml"
+            (change)="onFileSelected($event)"
+            style="display: none"
+          />
+          <ion-icon name="cloud-upload-outline" class="dropzone-icon"></ion-icon>
+          <h3>Selecciona o arrastra una imagen aquí</h3>
+          <p class="dropzone-hint">Formatos compatibles: PNG, JPG, WebP o SVG vectorial</p>
+
+          <div class="dropzone-actions">
+            <ion-button fill="solid" color="primary" (click)="$event.stopPropagation(); fileInput.click()">
+              <ion-icon slot="start" name="image-outline"></ion-icon>
+              Buscar en Dispositivo
+            </ion-button>
+            <ion-button fill="outline" color="secondary" (click)="$event.stopPropagation(); loadDemoPattern()">
+              <ion-icon slot="start" name="sparkles-outline"></ion-icon>
+              Cargar Imagen de Muestra
+            </ion-button>
+          </div>
+        </div>
+
+        @if (fileName()) {
+          <div class="file-loaded-banner">
+            <ion-chip [color]="conversionType() === 'svg' ? 'tertiary' : 'success'">
+              <ion-icon [name]="conversionType() === 'svg' ? 'color-filter-outline' : 'image-outline'"></ion-icon>
+              <ion-label>{{ fileName() }}</ion-label>
+            </ion-chip>
+            <ion-badge [color]="conversionType() === 'svg' ? 'tertiary' : 'primary'">
+              {{ conversionType() === 'svg' ? 'Vector SVG' : 'Mapa de Relieve Raster' }}
+            </ion-badge>
+          </div>
+        }
+      </ion-card-content>
+    </ion-card>
+
+    <!-- Sección de Recorte Interactivo (Para Imágenes Raster con ngx-image-cropper) -->
+    @if (conversionType() === 'heightmap' && (imageChangedEvent || imageFile)) {
+      <ion-card class="editor-card">
+        <ion-card-header>
+          <div class="editor-header">
+            <div>
+              <ion-card-title>
+                <ion-icon name="cut-outline"></ion-icon> Recortar y Ajustar Imagen
+              </ion-card-title>
+              <ion-card-subtitle>
+                Ajusta el área de interés. Las dimensiones se normalizan a 800px para garantizar la óptima triangulación 3D.
+              </ion-card-subtitle>
+            </div>
+            @if (isLoading()) {
+              <ion-spinner name="crescent" color="primary"></ion-spinner>
+            }
+          </div>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Controles de Proporción -->
+          <div class="cropper-toolbar">
+            <div class="toolbar-section">
+              <span class="control-label">Proporción:</span>
+              <ion-segment
+                [value]="aspectRatioMode"
+                (ionChange)="onAspectRatioChange($any($event).detail.value)"
+              >
+                <ion-segment-button value="free">
+                  <ion-label>Libre</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="1:1">
+                  <ion-label>1:1</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="4:3">
+                  <ion-label>4:3</ion-label>
+                </ion-segment-button>
+                <ion-segment-button value="16:9">
+                  <ion-label>16:9</ion-label>
+                </ion-segment-button>
+              </ion-segment>
+            </div>
+
+            <!-- Botones de Rotación y Espejo -->
+            <div class="toolbar-buttons">
+              <ion-button fill="outline" size="small" (click)="rotate(-90)" title="Girar 90° antihorario">
+                <ion-icon slot="icon-only" name="refresh-outline" style="transform: scaleX(-1)"></ion-icon>
+              </ion-button>
+              <ion-button fill="outline" size="small" (click)="rotate(90)" title="Girar 90° horario">
+                <ion-icon slot="icon-only" name="refresh-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="outline" size="small" (click)="flipHorizontal()" title="Espejo horizontal">
+                <ion-icon slot="icon-only" name="sync-outline"></ion-icon>
+              </ion-button>
+              <ion-button fill="clear" size="small" color="medium" (click)="resetTransforms()">
+                Restablecer
+              </ion-button>
+            </div>
+          </div>
+
+          <!-- Componente ngx-image-cropper -->
+          <div class="cropper-wrapper">
+            <image-cropper
+              [imageChangedEvent]="imageChangedEvent"
+              [imageFile]="imageFile ?? undefined"
+              [maintainAspectRatio]="maintainAspectRatio"
+              [aspectRatio]="aspectRatio"
+              [format]="'png'"
+              [resizeToWidth]="800"
+              [transform]="transform"
+              (imageCropped)="onImageCropped($event)"
+              (cropperReady)="onCropperReady()"
+              (loadImageFailed)="onLoadImageFailed()"
+            ></image-cropper>
+          </div>
+
+          <!-- Previsualización de recorte -->
+          @if (croppedPreview()) {
+            <div class="preview-mini-container">
+              <span class="preview-title">
+                <ion-icon name="eye-outline"></ion-icon> Previsualización de relieve resultante:
+              </span>
+              <img [src]="croppedPreview()" alt="Recorte" class="preview-thumbnail" />
+            </div>
+          }
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Sección de Previsualización Vectorial (Para Archivos SVG) -->
+    @if (conversionType() === 'svg' && svgContent()) {
+      <ion-card class="editor-card svg-preview-card">
+        <ion-card-header>
+          <ion-card-title>
+            <ion-icon name="color-filter-outline"></ion-icon> Vector SVG Listo para Extrusión
+          </ion-card-title>
+          <ion-card-subtitle>
+            El trazado poligonal será extruido ortogonalmente en el backend utilizando Shapely y NumPy STL.
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="svg-render-box" [innerHTML]="svgContent()"></div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Botón de Acción Principal para Continuar al Visor 3D -->
+    @if (croppedBlob || svgBlob) {
+      <div class="action-footer">
+        <ion-button
+          expand="block"
+          size="large"
+          color="success"
+          (click)="continueToViewer()"
+          class="continue-btn"
+        >
+          <ion-icon slot="start" name="cube-outline"></ion-icon>
+          Paso 2: Generar y Ajustar en 3D
+          <ion-icon slot="end" name="arrow-forward-outline"></ion-icon>
+        </ion-button>
+      </div>
+    }
+  </div>
+</ion-content>

@@ -1,0 +1,247 @@
+.home-content {
+  --background: var(--ion-color-step-50, #f8f9fc);
+}
+
+.page-wrapper {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.toolbar-title-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+
+  .title-icon {
+    font-size: 1.4rem;
+  }
+}
+
+.stepper-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding: 10px 16px;
+  background: var(--ion-card-background, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-color-medium);
+  font-size: 0.88rem;
+  font-weight: 500;
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ion-color-step-150, #e0e2ec);
+    color: var(--ion-color-step-800, #333333);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  &.active {
+    color: var(--ion-color-primary, #3880ff);
+    font-weight: 700;
+
+    .step-num {
+      background: var(--ion-color-primary, #3880ff);
+      color: #fff;
+    }
+  }
+}
+
+.step-divider {
+  flex: 1;
+  height: 2px;
+  margin: 0 10px;
+  background: var(--ion-color-step-150, #e0e2ec);
+}
+
+.upload-card,
+.editor-card {
+  border-radius: 14px;
+  margin: 0 0 18px 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.05);
+
+  &.drag-over {
+    border: 2px dashed var(--ion-color-primary, #3880ff);
+    background: rgba(56, 128, 255, 0.04);
+  }
+}
+
+.dropzone-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 28px 16px;
+  border: 2px dashed var(--ion-color-step-250, #c8ccd8);
+  border-radius: 10px;
+  cursor: pointer;
+  background: var(--ion-color-step-50, #fafbff);
+
+  .dropzone-icon {
+    font-size: 3rem;
+    color: var(--ion-color-primary);
+    margin-bottom: 10px;
+  }
+
+  h3 {
+    margin: 0 0 4px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+
+  .dropzone-hint {
+    margin: 0 0 16px 0;
+    font-size: 0.82rem;
+    color: var(--ion-color-medium);
+  }
+
+  .dropzone-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+  }
+}
+
+.file-loaded-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: var(--ion-color-step-100, #f0f2f8);
+  border-radius: 8px;
+}
+
+.editor-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cropper-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+
+  .toolbar-section {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    .control-label {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    ion-segment {
+      max-width: 260px;
+    }
+  }
+
+  .toolbar-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+}
+
+.cropper-wrapper {
+  width: 100%;
+  min-height: 320px;
+  max-height: 480px;
+  background: #141419;
+  border-radius: 10px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  image-cropper {
+    width: 100%;
+    max-height: 460px;
+  }
+}
+
+.preview-mini-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+  padding: 8px 12px;
+  background: var(--ion-color-step-50, #f4f5f9);
+  border-radius: 8px;
+
+  .preview-title {
+    font-size: 0.82rem;
+    font-weight: 600;
+  }
+
+  .preview-thumbnail {
+    width: 56px;
+    height: 56px;
+    object-fit: cover;
+    border-radius: 4px;
+    background: #000;
+  }
+}
+
+.svg-preview-card .svg-render-box {
+  width: 100%;
+  min-height: 220px;
+  max-height: 360px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #fff;
+  border: 1px solid var(--ion-color-step-200);
+  border-radius: 8px;
+  padding: 12px;
+
+  svg {
+    max-width: 100%;
+    max-height: 280px;
+  }
+}
+
+.action-footer {
+  margin: 20px 0 28px 0;
+
+  .continue-btn {
+    --border-radius: 12px;
+    font-weight: 700;
+  }
+}
+
+@media (max-width: 640px) {
+  .stepper-bar .step-label {
+    display: none;
+  }
+
+  .cropper-toolbar {
+    flex-direction: column;
+    align-items: stretch;
+
+    .toolbar-section ion-segment {
+      max-width: 100%;
+      flex: 1;
+    }
+  }
+}

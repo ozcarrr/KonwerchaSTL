@@ -1,0 +1,204 @@
+<ion-header [translucent]="true">
+  <ion-toolbar color="primary">
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/home" text="Atrás"></ion-back-button>
+    </ion-buttons>
+    <ion-title>
+      <div class="toolbar-title-container">
+        <ion-icon name="cube-outline" class="title-icon"></ion-icon>
+        <span>Visor 3D y Ajustes</span>
+      </div>
+    </ion-title>
+    <ion-buttons slot="end">
+      <ion-button (click)="goToHistory()" aria-label="Ver Historial">
+        <ion-icon slot="start" name="time-outline"></ion-icon>
+        Historial
+      </ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content [fullscreen]="true" class="viewer-content">
+  <div class="page-wrapper">
+    <!-- Indicador de Flujo Simple (3 Pasos de la Rúbrica) -->
+    <div class="stepper-bar">
+      <div class="step-item" (click)="backToHome()" style="cursor: pointer">
+        <span class="step-num">1</span>
+        <span class="step-label">Subir & Recortar</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item active">
+        <span class="step-num">2</span>
+        <span class="step-label">Ajustar en 3D</span>
+      </div>
+      <div class="step-divider"></div>
+      <div class="step-item" [class.active]="!!conversionState.stlBlob()">
+        <span class="step-num">3</span>
+        <span class="step-label">Descargar STL</span>
+      </div>
+    </div>
+
+    <!-- Si no hay archivo cargado en el estado de sesión -->
+    @if (!conversionState.activeBlob() && !conversionState.stlBlob()) {
+      <ion-card class="empty-state-card">
+        <ion-card-header>
+          <ion-icon name="information-circle-outline" class="empty-icon"></ion-icon>
+          <ion-card-title>No hay modelo 3D cargado</ion-card-title>
+          <ion-card-subtitle>
+            Sube y recorta una imagen raster o vectorial para generar la geometría tridimensional determinista.
+          </ion-card-subtitle>
+        </ion-card-header>
+        <ion-card-content>
+          <div class="empty-actions">
+            <ion-button fill="solid" color="primary" (click)="backToHome()">
+              <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+              Ir al Paso 1: Subir Imagen
+            </ion-button>
+            <ion-button fill="outline" color="secondary" (click)="loadSampleModel()">
+              <ion-icon slot="start" name="sparkles-outline"></ion-icon>
+              Cargar Muestra de Demostración
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    }
+
+    <!-- Contenedor del Visualizador 3D Three.js -->
+    <div class="viewer-layout" [class.hidden]="!conversionState.activeBlob() && !conversionState.stlBlob()">
+      <div class="viewport-card">
+        <!-- Canvas administrado por Three.js -->
+        <div #canvasContainer class="canvas-container">
+          <!-- Overlay de estado de carga mientras FastAPI procesa -->
+          @if (isConverting()) {
+            <div class="loading-overlay">
+              <ion-spinner name="crescent" color="primary"></ion-spinner>
+              <p>Generando malla 3D determinista en FastAPI...</p>
+              <small>Triangulando mapa de altura en el backend</small>
+            </div>
+          }
+
+          <!-- Overlay flotante con estadísticas de la malla 3D -->
+          @if (triangleCount() > 0 && !isConverting()) {
+            <div class="stats-overlay">
+              <ion-chip color="dark">
+                <ion-icon name="layersOutline"></ion-icon>
+                <ion-label>{{ triangleCount() | number }} triángulos</ion-label>
+              </ion-chip>
+              <ion-chip color="dark">
+                <ion-label>{{ (fileSizeBytes() / 1024) | number:'1.1-1' }} KB STL</ion-label>
+              </ion-chip>
+            </div>
+          }
+        </div>
+
+        <div class="viewport-footer">
+          <small class="hint-text">
+            Arrastra con el ratón o dedo para rotar | Desplaza para hacer zoom | Clic derecho para desplazar
+          </small>
+        </div>
+      </div>
+
+      <!-- Panel de Control y Parámetros -->
+      <ion-card class="controls-card">
+        <ion-card-header>
+          <div class="controls-header">
+            <div>
+              <ion-card-title>Ajustes Geométricos</ion-card-title>
+              <ion-card-subtitle>{{ fileName() }}</ion-card-subtitle>
+            </div>
+            <ion-badge [color]="conversionType() === 'svg' ? 'tertiary' : 'primary'">
+              {{ conversionType() === 'svg' ? 'Vector SVG' : 'Relieve Raster' }}
+            </ion-badge>
+          </div>
+        </ion-card-header>
+
+        <ion-card-content>
+          <!-- Control Slider de Altura / Profundidad -->
+          <div class="control-row">
+            <div class="control-label-wrapper">
+              <ion-label>
+                <strong>{{ conversionType() === 'svg' ? 'Profundidad de Extrusión' : 'Altura Máxima de Relieve' }}</strong>
+              </ion-label>
+              <span class="value-badge">{{ height }} mm</span>
+            </div>
+            <ion-range
+              [min]="1"
+              [max]="30"
+              [step]="0.5"
+              [pin]="true"
+              [(ngModel)]="height"
+              color="primary"
+            >
+              <ion-label slot="start">1mm</ion-label>
+              <ion-label slot="end">30mm</ion-label>
+            </ion-range>
+          </div>
+
+          <!-- Toggle Invertir Relieve (Sólo para imágenes Raster) -->
+          @if (conversionType() === 'heightmap') {
+            <div class="control-toggle-row">
+              <ion-toggle [(ngModel)]="invert" color="secondary">
+                <div class="toggle-text">
+                  <strong>Invertir Relieve</strong>
+                  <p>Intercambia cimas y valles (blanco bajo / negro alto)</p>
+                </div>
+              </ion-toggle>
+            </div>
+          }
+
+          <!-- Toggle Modo Alámbrico para Inspección -->
+          <div class="control-toggle-row">
+            <ion-toggle [(ngModel)]="wireframe" (ionChange)="toggleWireframe()" color="tertiary">
+              <div class="toggle-text">
+                <strong>Modo Alámbrico (Wireframe)</strong>
+                <p>Inspecciona la topología de la triangulación</p>
+              </div>
+            </ion-toggle>
+          </div>
+
+          <!-- Botones de Acción de Control -->
+          <div class="actions-group">
+            <ion-button
+              expand="block"
+              color="primary"
+              (click)="triggerConversion()"
+              [disabled]="isConverting()"
+              class="update-btn"
+            >
+              @if (isConverting()) {
+                <ion-spinner slot="start" name="crescent"></ion-spinner>
+                Procesando...
+              } @else {
+                <ion-icon slot="start" name="refresh-outline"></ion-icon>
+                Actualizar Modelo 3D
+              }
+            </ion-button>
+
+            <!-- Botón de Descarga STL (Paso 3) -->
+            <ion-button
+              expand="block"
+              color="success"
+              (click)="downloadStl()"
+              [disabled]="!conversionState.stlBlob() || isConverting()"
+              class="download-btn"
+            >
+              <ion-icon slot="start" name="download-outline"></ion-icon>
+              Paso 3: Descargar .STL
+            </ion-button>
+
+            <!-- Botón para Cargar Otra Imagen -->
+            <ion-button
+              expand="block"
+              fill="clear"
+              color="medium"
+              (click)="backToHome()"
+            >
+              <ion-icon slot="start" name="arrow-back-outline"></ion-icon>
+              Subir otra imagen
+            </ion-button>
+          </div>
+        </ion-card-content>
+      </ion-card>
+    </div>
+  </div>
+</ion-content>

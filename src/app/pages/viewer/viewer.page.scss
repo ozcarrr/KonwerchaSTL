@@ -1,0 +1,265 @@
+.viewer-content {
+  --background: var(--ion-color-step-50, #f8f9fc);
+}
+
+.page-wrapper {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.toolbar-title-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+
+  .title-icon {
+    font-size: 1.4rem;
+  }
+}
+
+/* Stepper de 3 Pasos */
+.stepper-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+  padding: 10px 16px;
+  background: var(--ion-card-background, #ffffff);
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.step-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ion-color-medium);
+  font-size: 0.88rem;
+  font-weight: 500;
+
+  .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--ion-color-step-150, #e0e2ec);
+    color: var(--ion-color-step-800, #333333);
+    font-size: 0.75rem;
+    font-weight: 700;
+  }
+
+  &.active {
+    color: var(--ion-color-primary, #3880ff);
+    font-weight: 700;
+
+    .step-num {
+      background: var(--ion-color-primary, #3880ff);
+      color: #fff;
+    }
+  }
+}
+
+.step-divider {
+  flex: 1;
+  height: 2px;
+  margin: 0 10px;
+  background: var(--ion-color-step-150, #e0e2ec);
+}
+
+/* Estado Vacío */
+.empty-state-card {
+  text-align: center;
+  padding: 32px 16px;
+  border-radius: 14px;
+  margin: 20px 0;
+
+  .empty-icon {
+    font-size: 3.5rem;
+    color: var(--ion-color-medium);
+    margin-bottom: 8px;
+  }
+
+  .empty-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 18px;
+    flex-wrap: wrap;
+  }
+}
+
+/* Layout del Visor y Panel */
+.viewer-layout {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 18px;
+  align-items: start;
+
+  &.hidden {
+    display: none !important;
+  }
+}
+
+/* Contenedor del Viewport Three.js */
+.viewport-card {
+  background: var(--ion-card-background, #ffffff);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.canvas-container {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  background: #13131a;
+  overflow: hidden;
+
+  canvas {
+    display: block;
+    width: 100% !important;
+    height: 100% !important;
+  }
+}
+
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(19, 19, 26, 0.85);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  color: #ffffff;
+  text-align: center;
+  padding: 16px;
+
+  p {
+    margin: 12px 0 4px 0;
+    font-size: 1rem;
+    font-weight: 600;
+  }
+
+  small {
+    color: var(--ion-color-step-400, #a0a0b0);
+    font-size: 0.82rem;
+  }
+}
+
+.stats-overlay {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+  pointer-events: none;
+}
+
+.viewport-footer {
+  padding: 8px 14px;
+  background: var(--ion-color-step-100, #f2f3f8);
+  text-align: center;
+
+  .hint-text {
+    font-size: 0.78rem;
+    color: var(--ion-color-medium);
+  }
+}
+
+/* Tarjeta de Controles */
+.controls-card {
+  border-radius: 14px;
+  margin: 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06);
+}
+
+.controls-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.control-row {
+  margin-bottom: 16px;
+
+  .control-label-wrapper {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+
+    .value-badge {
+      background: var(--ion-color-primary, #3880ff);
+      color: #fff;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+  }
+
+  ion-range {
+    padding-top: 4px;
+    padding-bottom: 4px;
+  }
+}
+
+.control-toggle-row {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  background: var(--ion-color-step-50, #f6f7fb);
+  border-radius: 8px;
+
+  ion-toggle {
+    width: 100%;
+
+    .toggle-text {
+      strong {
+        font-size: 0.9rem;
+        display: block;
+      }
+
+      p {
+        margin: 2px 0 0 0;
+        font-size: 0.78rem;
+        color: var(--ion-color-medium);
+      }
+    }
+  }
+}
+
+.actions-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 18px;
+
+  .update-btn {
+    --border-radius: 10px;
+    font-weight: 600;
+  }
+
+  .download-btn {
+    --border-radius: 10px;
+    font-weight: 700;
+  }
+}
+
+@media (max-width: 860px) {
+  .viewer-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .canvas-container {
+    height: 380px;
+  }
+}
